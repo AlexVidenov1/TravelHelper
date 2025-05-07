@@ -1,5 +1,7 @@
 namespace TravelHelper.Api.Services;
 public interface ICountryClient
 {
-    Task<dynamic?> GetAsync(string countryName);
+    Task<CountryInfo?> GetAsync(string isoCode);
 }
+
+public record CountryInfo(string Name, string FlagPng, string Currency);

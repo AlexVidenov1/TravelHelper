@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
+using TravelHelper.Api.Services;
 
 namespace TravelHelper.Api.Services;
+
 public class WeatherClient : IWeatherClient
 {
     private readonly HttpClient _http;
@@ -9,17 +11,22 @@ public class WeatherClient : IWeatherClient
     {
         _http = http; _cfg = cfg;
     }
-    public async Task<dynamic?> GetAsync(string city)
-    {
-        var key = _cfg["OpenWeather:Key"];
-        Console.WriteLine($"OWM key = {key}");
-        var url = $"https://api.openweathermap.org/data/2.5/weather" +
-                  $"?q={city}&appid={key}&units=metric";
+    public async Task<WeatherInfo?> GetAsync(string city)
+{
+    var key = _cfg["OpenWeather:Key"];
+    var url = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={key}&units=metric";
+    var resp = await _http.GetAsync(url);
+    if (!resp.IsSuccessStatusCode) return null;
 
-        var resp = await _http.GetAsync(url);
-        if (!resp.IsSuccessStatusCode) return null;   // вместо exception
+    var json = await resp.Content.ReadAsStringAsync();
+    using var doc = JsonDocument.Parse(json);
+    var root = doc.RootElement;
 
-        var json = await resp.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<dynamic>(json);
-    }
+    decimal temp = root.GetProperty("main").GetProperty("temp").GetDecimal();
+    string desc = root.GetProperty("weather")[0].GetProperty("description").GetString()!;
+    string icon = root.GetProperty("weather")[0].GetProperty("icon").GetString()!;
+    string country = root.GetProperty("sys").GetProperty("country").GetString()!;
+
+    return new WeatherInfo(temp, desc, icon, country);
+}
 }

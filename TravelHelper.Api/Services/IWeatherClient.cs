@@ -1,5 +1,7 @@
-namespace TravelHelper.Api.Services;
+namespace TravelHelper.Api.Services
+{
 public interface IWeatherClient
 {
-    Task<dynamic?> GetAsync(string city);
+Task<WeatherInfo?> GetAsync(string city);
+}
 }

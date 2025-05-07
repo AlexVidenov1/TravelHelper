@@ -1,0 +1,1 @@
+Favorite { int Id; int UserId; string City; string Note; DateTime Created; }

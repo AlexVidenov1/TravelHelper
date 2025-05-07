@@ -1,0 +1,1 @@
+User { int Id; string Email; string PasswordHash; }

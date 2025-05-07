@@ -12,6 +12,7 @@ public static class JwtGenerator
         var claims = new[]
         {
 new Claim(JwtRegisteredClaimNames.Sub,u.Id.ToString()),
+new Claim(ClaimTypes.NameIdentifier, u.Id.ToString()),
 new Claim(JwtRegisteredClaimNames.Email,u.Email)
 };
         var key = new SymmetricSecurityKey(

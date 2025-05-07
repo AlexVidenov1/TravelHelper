@@ -1,41 +1,76 @@
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using TravelHelper.Api.Data;
+using TravelHelper.Api.Services;
+using Microsoft.OpenApi.Models;
+
+
 var builder = WebApplication.CreateBuilder(args);
+var cfg = builder.Configuration;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// ---------------- DB ----------------
+builder.Services.AddDbContext<TravelContext>(
+o => o.UseSqlite(cfg.GetConnectionString("Default")));
 
+// ------------- JWT ------------------
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(opt =>
+{
+    opt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = cfg["Jwt:Issuer"],
+        ValidateAudience = false,
+        IssuerSigningKey =
+    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(cfg["Jwt:Key"])),
+        ValidateIssuerSigningKey = true
+    };
+});
+
+// --------- Swagger --------------
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    // … вече генерираните настройки
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT in header. Format: Bearer {token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+{
+    {
+        new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
+            { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+        },
+        Array.Empty<string>()
+    }
+});
+});
+
+// -------- HTTP clients ----------
+builder.Services.AddHttpClient<IWeatherClient, WeatherClient>();
+builder.Services.AddHttpClient<ICountryClient, CountryClient>();
+builder.Services.AddHttpClient<IRatesClient, RatesClient>();
+builder.Services.AddScoped<IDestinationAggregator, DestinationAggregator>();
+
+builder.Services.AddControllers();
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// ---------- pipeline -------------
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+app.MapControllers();
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

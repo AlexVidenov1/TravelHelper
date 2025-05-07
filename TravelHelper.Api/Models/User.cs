@@ -1,1 +1,7 @@
-User { int Id; string Email; string PasswordHash; }
+namespace TravelHelper.Api.Models;
+public class User
+{
+    public int Id { get; set; }
+    public string Email { get; set; } = "";
+    public string PasswordHash { get; set; } = "";
+}

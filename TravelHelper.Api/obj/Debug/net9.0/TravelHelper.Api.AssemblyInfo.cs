@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TravelHelper.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c677a2f057a79ed499db980363c65441499d57b0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+710130e42b8649da79b1cbd9197ef6fe93e6f175")]
 [assembly: System.Reflection.AssemblyProductAttribute("TravelHelper.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TravelHelper.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

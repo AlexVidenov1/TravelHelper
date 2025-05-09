@@ -68,6 +68,7 @@ var app = builder.Build();
 // ---------- pipeline -------------
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
 app.UseAuthentication();
 app.UseAuthorization();
